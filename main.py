@@ -25,7 +25,7 @@ dataset["SE"] = np.random.normal(scale=0.01, size=dataset.shape[0])
 
 
 model = BasicModel(all_data=dataset, col_t="DateI", col_obs="Deaths", col_group="State/UnionTerritory",
-                 col_obs_compare="Deaths", all_cov_names=["DaysCovariate", "DaysCovariate", "DaysCovariate"], fun=expit, predict_space=expit, fit_dict={'fe_init': np.random.normal(scale=0.5, size=3)},  basic_model_dict={'col_obs_se': "SE", 'col_covs': [["DaysCovariate"], ["DaysCovariate"], ["DaysCovariate"]], 'param_names': ['alphalink', 'betalink', 'gammalink'], 'link_fun': [exponential, identity, exponential], 'var_link_fun': [exponential, identity, exponential]}, obs_se_func=return_se_as_f_of_t)
+                 col_obs_compare="Deaths", all_cov_names=["DaysCovariate", "DaysCovariate", "DaysCovariate"], fun=log_expit, predict_space=log_expit, fit_dict={'fe_init': np.random.normal(scale=0.5, size=3)},  basic_model_dict={'col_obs_se': "SE", 'col_covs': [["DaysCovariate"], ["DaysCovariate"], ["DaysCovariate"]], 'param_names': ['alphalink', 'betalink', 'gammalink'], 'link_fun': [exponential, identity, exponential], 'var_link_fun': [exponential, identity, exponential]}, obs_se_func=return_se_as_f_of_t)
 model.setup_pipeline()
 
 print("Model setup. Running fit...")
@@ -38,8 +38,7 @@ with open('model.pkl', 'wb') as f:
 
 print("Model saved.")
 
-predictions = model.predict(np.linspace(0, 63, num=63), predict_space=expit, predict_group="Kerala")
-
+predictions = model.predict(np.linspace(1, 63, num=63), predict_space=log_expit, predict_group="Kerala")
 print(predictions)
 plt.plot(predictions)
 plt.plot(dataset["Deaths"])
