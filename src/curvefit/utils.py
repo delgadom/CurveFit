@@ -4,6 +4,17 @@ from copy import deepcopy
 from collections import OrderedDict
 from scipy.optimize import bisect
 from .functions import *
+try :
+	from scipy.stats import median_absolute_deviation
+except ImportError :
+	# median_absolute_deviation is not in scipy before version 1.3.0
+	def median_absolute_deviation(vec, nan_policy='omit', scale=1.4826 ) :
+		assert nan_polisy == 'omit'
+		assert scale == 1.4826
+		assert len( vec.shape ) == 1
+		med = numpy.median( vec )
+		mad = numpy.median( abs(vec - med) )
+		return scale * mad
 
 
 def sizes_to_indices(sizes):
@@ -81,12 +92,43 @@ def get_derivative_of_column_in_log_space(df, col_obs, col_t, col_grp):
     return df_result
 
 
+def across_group_mean_std(df,
+                          col_val,
+                          col_group,
+                          col_axis):
+    """Compute the mean and std of the residual matrix across locations.
+
+    Args:
+        df (pd.DataFrame): Residual data frame.
+        col_val ('str'): Name for column that store the residual.
+        col_group ('str'): Name for column that store the group label.
+        col_axis (list{str}): List of two axis column names.
+
+    Returns:
+        pd.DataFrame:
+            Averaged residual mean and std data frame.
+    """
+    df_list = [
+        df[df[col_group] == group].copy()
+        for group in df[col_group].unique()
+    ]
+    for i, df_sub in enumerate(df_list):
+        df_sub_result = df_sub.groupby(col_axis, as_index=False).agg(
+            {col_val: [np.nanmean, np.nanstd]}
+        )
+        df_sub_result.columns = [*col_axis, 'mean', 'std']
+        df_list[i] = df_sub_result
+
+    return pd.concat(df_list)
+
+
 def neighbor_mean_std(df,
                       col_val,
                       col_group,
                       col_axis,
                       axis_offset=None,
-                      radius=None):
+                      radius=None,
+                      compute_mad=False):
     """Compute the neighbor mean and std of the residual matrix.
 
     Args:
@@ -98,6 +140,8 @@ def neighbor_mean_std(df,
             List of offset for each axis to make it suitable as numpy array.
         radius (list{int} | None, optional):
             List of the neighbor radius for each dimension.
+        compute_mad (bool, optional):
+            If compute_mad, also compute median absolute deviation.
 
     Returns:
         pd.DataFrame:
@@ -116,34 +160,33 @@ def neighbor_mean_std(df,
     assert all([isinstance(r, int) for r in radius])
 
     df_list = [
-        df[df[col_group] == group]
+        df[df[col_group] == group].reset_index()
         for group in df[col_group].unique()
     ]
+    # TODO: Make this faster
     for i, df_sub in enumerate(df_list):
-        index = df_sub[col_axis].values.astype(int)
-        index += np.array(axis_offset)
-        shape = tuple(index.max(axis=0) + 1)
+        index = np.unique(np.asarray(df_sub[col_axis].values), axis=0).astype(int)
+        new_df = pd.DataFrame({
+            'group': df_sub[col_group].iloc[0],
+            col_axis[0]: index[:, 0],
+            col_axis[1]: index[:, 1],
+            'residual_mean': np.nan,
+            'residual_std': np.nan
+        })
+        for j in index:
+            print(j, end='\r')
+            df_filter = df_sub.copy()
+            for k, ax in enumerate(col_axis):
+                rad = radius[k]
+                ax_filter = np.abs(df_sub[col_axis[k]] - j[k]) <= rad
+                df_filter = df_filter.loc[ax_filter]
+            mean = np.abs(df_filter[col_val]).mean()
+            std = df_filter[col_val].std()
+            subset = np.all(new_df[col_axis] == j, axis=1).values
+            new_df.loc[subset, 'residual_mean'] = mean
+            new_df.loc[subset, 'residual_std'] = std
 
-        mat = np.empty(shape)
-        mat.fill(np.nan)
-        mat[index[:, 0], index[:, 1]] = df_sub[col_val]
-
-        window_shape = tuple(np.array(radius)*2 + 1)
-        mat = np.pad(mat, ((radius[0],), (radius[1],)), 'constant',
-                     constant_values=np.nan)
-        view_shape = tuple(
-            np.subtract(mat.shape, window_shape) + 1) + window_shape
-        strides = mat.strides + mat.strides
-        sub_mat = np.lib.stride_tricks.as_strided(mat, view_shape, strides)
-        sub_mat = sub_mat.reshape(*shape, np.prod(window_shape))
-
-        mat_mean = np.nanmean(sub_mat, axis=2)
-        mat_std = np.nanstd(sub_mat, axis=2)
-
-        df_sub['residual_mean'] = mat_mean[index[:, 0], index[:, 1]]
-        df_sub['residual_std'] = mat_std[index[:, 0], index[:, 1]]
-
-        df_list[i] = df_sub
+        df_list[i] = new_df
 
     return pd.concat(df_list)
 
@@ -433,3 +476,81 @@ def solve_p_from_dderf(alpha, beta, slopes, slope_at=14):
         p[i] = np.exp(x)
 
     return p
+
+
+def sample_from_samples(samples, sample_size):
+    """Sample from given samples.
+
+    Args:
+        samples (np.ndarray):
+            Given samples, assume to be 1D array.
+        sample_size (int):
+            Number of samples want to predict.
+
+    Returns:
+        new_samples (np.ndarray):
+            Generated new samples.
+    """
+    mean = np.mean(samples)
+    std = np.std(samples)
+
+    new_samples = mean + np.random.randn(sample_size)*std
+
+    return new_samples
+
+
+def truncate_draws(t, draws, draw_space, last_day, last_obs, last_obs_space):
+    """Truncating draws to the given last day and last obs.
+
+    Args:
+        t (np.ndarray):
+            Time variables for the draws.
+        draws (np.ndarray):
+            Draws matrix.
+        draw_space (str | callable):
+            Which space is the draw in.
+        last_day (int | float):
+            From which day, should the draws start.
+        last_obs (int | float):
+            From which observation value, should the draws start.
+        last_obs_space (str | callable):
+            Which space is the last observation in.
+
+    Returns:
+        np.ndarray:
+            Truncated draws.
+    """
+    draw_ndim = draws.ndim
+    if draw_ndim == 1:
+        draws = draws[None, :]
+
+    assert draws.shape[1] == t.size
+
+    if callable(draw_space):
+        draw_space = draw_space.__name__
+    if callable(last_obs_space):
+        last_obs_space = last_obs_space.__name__
+
+    assert draw_space in ['erf', 'derf', 'log_erf', 'log_derf']
+    assert last_obs_space in ['erf', 'log_erf']
+
+    if last_obs_space == 'erf':
+        assert last_obs >= 0.0
+    else:
+        last_obs = np.exp(last_obs)
+
+    last_day = int(np.round(last_day))
+    assert last_day >= t.min() and last_day < t.max()
+
+    derf_draws = data_translator(draws, draw_space, 'derf')
+
+    erf_draws = data_translator(
+        np.insert(derf_draws[:, last_day + 1:], 0, 0.0, axis=1),
+        'derf', 'erf') + last_obs
+
+
+    truncated_draws = data_translator(erf_draws, 'erf', draw_space)
+    if draw_ndim == 1:
+        truncated_draws = truncated_draws.ravel()
+
+    return truncated_draws
