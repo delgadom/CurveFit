@@ -90,6 +90,7 @@ class CurveModel:
             cov.shape[1]
             for cov in self.covs
         ])
+        
         self.fe_idx = utils.sizes_to_indices(self.fe_sizes)
         self.num_fe = self.fe_sizes.sum()
         self.num_re = self.num_groups*self.num_fe
@@ -168,12 +169,19 @@ class CurveModel:
         var = fe + re
         for i in range(self.num_fe):
             var[:, i] = self.var_link_fun[i](var[:, i])
+
+        print(covs)
+
         params = np.vstack([
             np.sum(cov*var[:, self.fe_idx[i]], axis=1)
             for i, cov in enumerate(covs)
         ])
 
+        print(params)
+        
         for i in range(self.num_params):
+            print(i)
+            print(params[i])
             params[i] = self.link_fun[i](params[i])
 
         return params

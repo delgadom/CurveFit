@@ -121,6 +121,7 @@ class PVGroup:
         """
         print(f"Running PV for {self.predict_group}")
         predictions = []
+        print("ASDASDADSD")
 
         for i, time in enumerate(self.times):
             print(f"Fitting model for end time {time}", end='\r')
@@ -135,6 +136,7 @@ class PVGroup:
                     predict_group=self.predict_group
                 )
             )
+            print(predictions)
             self.prediction_matrix = np.vstack([predictions])
             self.compute_residuals(theta=theta)
 

@@ -16,3 +16,9 @@ Required packages:
 * `numpy`,
 * `scipy`,
 * `pandas`. 
+
+# Running
+
+```
+python main.py
+```
