@@ -120,7 +120,6 @@ class PVGroup:
         """
         print(f"Running PV for {self.predict_group}")
         predictions = []
-        print("ASDASDADSD")
 
         for i, time in enumerate(self.times):
             print(f"Fitting model for end time {time}", end='\r')
