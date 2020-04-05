@@ -17,7 +17,6 @@ If you want to install somewhere other than the defualt for your system:
 ```
 make install prefix=install_prefix_directory
 ```
-
 Required packages:
 * `numpy`,
 * `scipy`,

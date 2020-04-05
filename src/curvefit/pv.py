@@ -134,7 +134,6 @@ class PVGroup:
                     predict_group=self.predict_group
                 )
             )
-            print(predictions)
             self.prediction_matrix = np.vstack([predictions])
             self.compute_residuals(theta=theta)
 
