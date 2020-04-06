@@ -37,12 +37,12 @@ def data_country(selected_country, dataset='confirmed'):
         df = df.sum()
     return df.index, df.values
 
-date_confirmed, confirmed = data_country('Japan', 'confirmed') # or Canada, etc. for confirmed cases
 
-date_death, death = data_country('Japan', 'death') # or Canada, etc. for confirmed cases
+if __name__ == "__main__":
+    date_confirmed, confirmed = data_country('Japan', 'confirmed') # or Canada, etc. for confirmed cases
 
+    date_death, death = data_country('Japan', 'death') # or Canada, etc. for confirmed cases
 
-
-for i, e in enumerate(date_confirmed):
-    date = datetime.datetime.strptime(date_confirmed[i], '%m/%d/%y').strftime('%Y/%m/%d')
-    print(date, death[i], confirmed[i])
+    for i, e in enumerate(date_confirmed):
+        date = datetime.datetime.strptime(date_confirmed[i], '%m/%d/%y').strftime('%Y/%m/%d')
+        print(date, death[i], confirmed[i])
