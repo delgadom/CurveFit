@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 def return_se_as_f_of_t(t):
     return np.random.normal(scale=0.1)
 
-dataset = pd.read_csv('dataset_for_CurveFit.csv')
-dataset = dataset[(dataset["State/UnionTerritory"] == "Kerala") | (dataset["State/UnionTerritory"] == "Maharashtra") | (dataset["State/UnionTerritory"] == "Hubei")]
+dataset = pd.read_csv('dataset_for_CurveFit_JP.csv')
+dataset = dataset[(dataset["State/UnionTerritory"] == "Japan") | (dataset["State/UnionTerritory"] == "Hubei")]
 dataset = dataset.reset_index(drop=True)
 dataset = dataset.sort_values(by=["DateI"])
 dataset["SE"] = np.random.normal(scale=0.1, size=dataset.shape[0])
@@ -36,11 +36,8 @@ print("Model saved.")
 model.run(n_draws=180, prediction_times=np.linspace(0, 180, num=180), cv_threshold=0.001, smoothed_radius=[4,4], exclude_groups=["Hubei"], exclude_below=20)
 #model.plot_draws(np.linspace(50, 70, num=20), sharex=True, sharey=False)
 # plt.show()
-predictions_Kerala = np.exp(model.mean_predictions["Kerala"])
-predictions_Maharashtra = np.exp(model.mean_predictions["Maharashtra"])
-print(predictions_Kerala)
-print(predictions_Maharashtra)
-plt.plot(np.exp(predictions_Kerala), label="KR")
-plt.plot(np.exp(predictions_Maharashtra), label="MH")
+predictions_Japan = np.exp(model.mean_predictions["Japan"])
+print(predictions_Japan)
+plt.plot(np.exp(predictions_Japan), label="JP")
 plt.legend(loc="upper left")
 plt.show()

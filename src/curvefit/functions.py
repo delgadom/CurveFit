@@ -9,7 +9,7 @@ def identity(t):
     return t
 
 def exponential(t):
-    return np.exp(t)
+    return np.exp(t+0.000000001)
 
 # logistic function
 def expit(t, params):
