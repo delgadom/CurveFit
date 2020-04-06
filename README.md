@@ -13,7 +13,7 @@ This is NOT the official repository for the IHME COVID model. See their repo at 
 Execute the python script ``python main.py`` or run the ipython notebook using Binder:
 
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/delgadom/CurveFit/HiroakiMachida?filepath=main.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/delgadom/CurveFit/HiroakiMachida?urlpath=lab%2Ftree%2Fmain.ipynb)
 
 ## Install
 
