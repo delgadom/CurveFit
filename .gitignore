@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-#directories created by install procedure
-=======
 # directories created by install procedure
->>>>>>> d3969f244a2f469f1c453303272892c9f77cf3a7
 /dist/
 /build/
 /src/curvefit.egg-info/
@@ -12,7 +8,4 @@
 *.swp
 # python compiled files in any directory
 *.pyc
-<<<<<<< HEAD
 model.pkl
-=======
->>>>>>> d3969f244a2f469f1c453303272892c9f77cf3a7
