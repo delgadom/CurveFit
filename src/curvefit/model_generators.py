@@ -188,7 +188,11 @@ class ModelPipeline:
         """
         Function to create predictions based on the model fit.
         Args:
+<<<<<<< HEAD
+            times: https://ihmeuw-msca.github.io/CurveFit/methods/(np.array) of times to predict at
+=======
             times: (np.array) of times to predict at
+>>>>>>> d3969f244a2f469f1c453303272892c9f77cf3a7
             predict_space: (callable) curvefit.functions function to predict in that space
             predict_group: which group to make predictions for
         """
