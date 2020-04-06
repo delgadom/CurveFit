@@ -1,12 +1,16 @@
-# Curve Fitting for the COVID-19 Project
-## Institute for Health Metrics and Evaluation
 
-### Maintainers
-Aleksandr Aravkin (saravkin@uw.edu)
-Peng Zheng (zhengp@uw.edu)
-Marlena Bannick (mnorwood@uw.edu)
+# Exploration of tools, data from Aravkin et al 2020 (forthcoming)
 
-### **For any inquiries, please contact covid19@healthdata.org.**
+This is highly experimental and does not match official projections
+
+Warning
+-------
+
+This is NOT the official repository for the IHME COVID model. See their repo at https://github.com/ihmeuw-msca/CurveFit
+
+# Usage
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/delgadom/CurveFit/HiroakiMachida?filepath=main.ipynb)
 
 ## Install
 
